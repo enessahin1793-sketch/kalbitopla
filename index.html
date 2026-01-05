@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rol & Ceza Çift Oyunu</title>
+<title>Emrivaki Kart Oyunu</title>
 <style>
 body{
     margin:0;
     height:100vh;
-    background:radial-gradient(circle at top,#4b0015,#000);
+    background:radial-gradient(circle at top,#2a000c,#000);
     display:flex;
     justify-content:center;
     align-items:center;
@@ -18,95 +18,91 @@ body{
 }
 .card{
     width:90%;
-    max-width:430px;
-    padding:34px;
+    max-width:420px;
+    padding:32px;
     background:rgba(0,0,0,.85);
-    border-radius:30px;
-    box-shadow:0 0 45px rgba(255,0,90,.6);
+    border-radius:28px;
+    box-shadow:0 0 40px rgba(255,0,60,.55);
 }
-h2{color:#ff1e5a;}
-.role{font-size:15px; margin-bottom:6px; opacity:.9;}
-.level{font-size:13px; opacity:.7; margin-bottom:12px;}
+h2{color:#ff2f6d;}
+.note{font-size:13px;opacity:.7;margin-bottom:10px;}
 button{
     margin:10px 6px 0;
-    padding:14px 26px;
-    font-size:17px;
+    padding:15px 28px;
+    font-size:18px;
     border:none;
     border-radius:40px;
-    background:#ff1e5a;
+    background:#ff2f6d;
     color:white;
 }
-button.ceza{background:#ff8c1a;}
+button.ceza{background:#ff9f1a;}
 button:active{transform:scale(.95);}
 </style>
 </head>
 <body>
 
 <div class="card">
-    <div class="role" id="role">Rol: Kontrolcü 😈</div>
-    <div class="level" id="level">Tur: 1</div>
-    <h2>ROL & CEZA</h2>
-    <p id="task">Hazırsan kart çek…</p>
+    <h2>🔥 Kartı Çek 🔥</h2>
+    <div class="note">Okuyan yapar. Yapmazsan ceza.</div>
+    <p id="task">Hazırsan çek…</p>
     <button onclick="drawCard()">Kart Çek</button>
     <button class="ceza" onclick="drawPenalty()">Ceza</button>
 </div>
 
 <script>
-let turn = 1;
-let controller = true;
+// EMRİVAKİ ANA KARTLAR (rol yazmaz, emir verir)
+const cards = [
+"20 saniye boyunca boynuna yaklaş ve geri çekil",
+"Gözlerinin içine bak, konuşma (30 sn)",
+"Ellerini beline koy ve sabit dur (15 sn)",
+"Boynuna yavaş bir öpücük kondur",
+"Karşındakinin kafasını tut ve özel bölgene bastır (30 sn)",
+"Karşı tarafın özel bölgesini tut ve 30 saniye okşa",
+"Kulağına alçak sesle tek kelime fısılda",
+"Zevk alacağı yerlere yavaşça dokun",
+"Yüzüne çok yaklaş, nefesini hissettir",
+"Omzuna yavaş bir dokunuş yap ve öp",
 
-const roleCards = [
-"⏳ 30 sn: Teslim olan çok yakın duracak, dokunmak yasak",
-"🚫 Konuşmak yasak: Sadece bakış (20 sn)",
-"🔥 Teslim olana tek kelimelik bir komut ver",
-"⏳ 20 sn: Yaklaş – dur – yaklaş – dur",
-"🚫 Dokunmak yasak: Nefesini hissettir",
-"🔥 Teslim olana beklemesini söyle",
-"⏳ 15 sn: Teslim olan gözlerini kapatır",
-"🚫 Gülmek yasak: Göz teması",
-"🔥 Teslim olana neden şu an zorlandığını söylet",
-"⏳ 30 sn: Yavaş ama bırakması yasak temas",
+"Boynuna yaklaş ve orada kal (15 sn)",
+"Bir şekilde karşındakinin seni susturmasını sağla (30 sn)",
+"Ellerini arkada birleştir ve bekle",
+"Karşındakinin kafasını tut ve özel bölgene bastır (30 sn)",
+"Karşındakinin istediği bir bölgesini yala (60 sn)",
+"Kulağına adını fısılda ve sıcak nefesini ver",
+"Karşındakinin dudaklarını em ve ısır",
+"30 saniye boyunca boynunu yala",
+"Yüzünü ellerinin arasına al (kısa)",
+"Karşındakinin en çok istediği şeyi yap",
 
-"🔥 Teslim olana ismini fısıldat",
-"🚫 Konuşmak yasak: Sessiz yakınlık",
-"⏳ 20 sn: Kontrolcü bakar, diğeri bekler",
-"🔥 Teslim olana kontrolü bıraktığını söylet",
-"🚫 Dokunmak yasak: Boyuna yaklaş",
-
-"🔥 Teslim olana ‘şimdi değil’ hissi yaşat",
-"⏳ 30 sn: El tutma – bırakamaz",
-"🚫 Göz kaçırmak yasak",
-"🔥 Teslim olana seni en çok neyin ateşlediğini söylet",
-"⏳ 15 sn: Kulak hizasında nefes"
+"Boynuna bir öpücük daha",
+"Kendi özel bölgeni okşa (30 sn)",
+"Gözlerini kapat ve bekle (20 sn)",
+"En çok yükseldiğin şeyi söyle ve karşındaki onu yapsın",
+"Saçlarının arkasına elini koy",
+"Boynuna doğru eğil ve dur",
+"Bakışlarınla yönlendir",
+"Karşındakine bir emir ver",
+"Elini tutup yukarı kaldır (kısa)",
+"Karşındakinin kafasını tut ve özel bölgene bastır (30sn)"
 ];
 
+// YAPMAYANA CEZALAR (+18 ama yumuşak)
 const penalties = [
-"🔥 Ceza: 20 saniye boyunca göz teması",
-"⏳ Ceza: 30 saniye sessiz bekleme",
-"🚫 Ceza: Konuşmak 1 tur yasak",
-"🔥 Ceza: Kontrolcüye tek kelimeyle itiraf",
-"⏳ Ceza: 20 saniye çok yakın durma",
-"🚫 Ceza: Dokunmak 1 tur yasak",
-"🔥 Ceza: Kontrolcüye fısıltıyla iltifat",
-"⏳ Ceza: Gözler kapalı bekleme",
-"🔥 Ceza: Kontrolcüye neden zorlandığını söyle",
-"🚫 Ceza: Gülmek yasak (20 sn)"
+"30 saniye boyunca inleyerek boynunu yalat",
+"20 saniye kendi parmağını em",
+"Gözler kapalı bekle karşındaki sana istediğini yapabilir (20 sn)",
+"Özel bölgeni tut ve okşa (30 sn)",
+"",
+"",
+"",
+"",
+"",
+"Karşındakinin sana 3 defa tokat atması için yalvar"
 ];
-
-function updateRole(){
-    if(turn % 5 === 0){
-        controller = !controller;
-    }
-    document.getElementById("role").innerText =
-        controller ? "Rol: Kontrolcü 😈" : "Rol: Teslim Olan 🔥";
-}
 
 function drawCard(){
-    const r = Math.floor(Math.random()*roleCards.length);
-    document.getElementById("task").innerText = roleCards[r];
-    turn++;
-    document.getElementById("level").innerText = "Tur: " + turn;
-    updateRole();
+    const r = Math.floor(Math.random()*cards.length);
+    document.getElementById("task").innerText = cards[r];
 }
 
 function drawPenalty(){
